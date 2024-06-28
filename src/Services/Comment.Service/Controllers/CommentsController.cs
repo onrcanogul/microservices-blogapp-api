@@ -13,19 +13,19 @@ namespace Comment.Service.Controllers
     public class CommentsController(IMediator mediator) : ControllerBase
     {
         [HttpGet("{CommentId}")]
-        public async Task<IActionResult> GetCommentById([FromRoute]GetCommentByIdQueryRequest request)
+        public async Task<IActionResult> GetCommentById([FromRoute] GetCommentByIdQueryRequest request)
         {
             GetCommentByIdQueryResponse response = await mediator.Send(request);
             return Ok(response);
         }
         [HttpGet("[action]/{UserId}")]
-        public async Task<IActionResult> GetCommentsByUser([FromRoute]GetCommentsByUserQueryRequest request)
+        public async Task<IActionResult> GetCommentsByUser([FromRoute] GetCommentsByUserQueryRequest request)
         {
             GetCommentsByUserQueryResponse response = await mediator.Send(request);
             return Ok(response);
         }
         [HttpGet("[action]/{PostId}")]
-        public async Task<IActionResult> GetCommentsByPost([FromRoute]GetCommentsByPostQueryRequest request)
+        public async Task<IActionResult> GetCommentsByPost([FromRoute] GetCommentsByPostQueryRequest request)
         {
             GetCommentsByPostQueryResponse response = await mediator.Send(request);
             return Ok(response);
@@ -36,8 +36,8 @@ namespace Comment.Service.Controllers
             CreateCommentCommandResponse response = await mediator.Send(request);
             return Ok(response);
         }
-        [HttpDelete]
-        public async Task<IActionResult> DeleteComment(DeleteCommentCommandRequest request)
+        [HttpDelete("{CommentId}")]
+        public async Task<IActionResult> DeleteComment([FromRoute]DeleteCommentCommandRequest request)
         {
             DeleteCommentCommandResponse response = await mediator.Send(request);
             return Ok(response);
