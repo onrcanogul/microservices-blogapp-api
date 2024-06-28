@@ -13,7 +13,7 @@ namespace Comment.Service.Controllers
     public class CommentsController(IMediator mediator) : ControllerBase
     {
         [HttpGet("{CommentId}")]
-        public async Task<IActionResult> GetCommentById(GetCommentByIdQueryRequest request)
+        public async Task<IActionResult> GetCommentById([FromRoute]GetCommentByIdQueryRequest request)
         {
             GetCommentByIdQueryResponse response = await mediator.Send(request);
             return Ok(response);
