@@ -1,0 +1,3 @@
+Comment.Service -> https://localhost:7229
+Post.Service -> https://localhost:7299
+User.Service -> https://localhost:7109
