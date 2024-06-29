@@ -1,27 +1,53 @@
 ﻿using Comment.Service.Exceptions;
+using Comment.Service.Models.Contexts;
 using Comment.Service.Models.Dtos;
+using Comment.Service.Models.Entities;
 using Comment.Service.Services.Abstractions;
 using MongoDB.Driver;
+using Shared.Events;
+using System.Text.Json;
 
 namespace Comment.Service.Services
 {
-    public class CommentService(IMongoDbService mongoDbService) : ICommentService
+    public class CommentService(IMongoDbService mongoDbService, CommentOutboxDbContext context) : ICommentService
     {
         
         public async Task<bool> CreateCommentAsync(string message, string userId, string postId)
-        {
-            Models.Entities.Comment comment = new()
+        {     
+            try
             {
-                Id = Guid.NewGuid(),
-                CreatedDate = DateTime.Now,
-                Message = message,
-                UserId = userId,
-                PostId = Guid.Parse(postId)
-            };
-            await commentCollection.InsertOneAsync(comment);
+                Models.Entities.Comment comment = new()
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedDate = DateTime.Now,
+                    Message = message,
+                    UserId = userId,
+                    PostId = Guid.Parse(postId)
+                };
+                Task insertTask = commentCollection.InsertOneAsync(comment);
+                CommentCreatedEvent commentCreatedEvent = new()
+                {
+                    CommentId = comment.Id,
+                    PostId = comment.PostId,
+                    UserId = comment.UserId
+                };
+                CommentOutbox commentOutbox = new()
+                {
+                    IdempotentToken = Guid.NewGuid(),
+                    OccuredOn = DateTime.Now,
+                    Payload = JsonSerializer.Serialize(commentCreatedEvent),
+                    ProcessedOn = null,
+                    Type = commentCreatedEvent.GetType().Name
 
-
-            return true;
+                };    
+                Task saveTask = context.SaveChangesAsync();
+                await Task.WhenAll(insertTask,saveTask);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
 
             //todo outbox table
         }
