@@ -4,6 +4,7 @@ using Comment.Service.Models.Dtos;
 using Comment.Service.Models.Entities;
 using Comment.Service.Services.Abstractions;
 using MongoDB.Driver;
+using Shared.Base;
 using Shared.Events;
 using System.Text.Json;
 
@@ -33,16 +34,7 @@ namespace Comment.Service.Services
                     UserId = comment.UserId,
                     IdempotentToken = idempotentToken
                 };
-                CommentOutbox commentOutbox = new()
-                {
-                    IdempotentToken = idempotentToken,
-                    OccuredOn = DateTime.Now,
-                    Payload = JsonSerializer.Serialize(commentCreatedEvent),
-                    ProcessedOn = null,
-                    Type = commentCreatedEvent.GetType().Name
-
-                };
-                await context.CommentOutboxes.AddAsync(commentOutbox);
+                AddToCommentOutboxWithoutSaving(commentCreatedEvent, idempotentToken);
                 Task saveTask = context.SaveChangesAsync();
                 await Task.WhenAll(insertTask,saveTask);
                 return true;
@@ -55,8 +47,35 @@ namespace Comment.Service.Services
 
         public async Task<bool> DeleteCommentAsync(string commentId)
         {
-           await commentCollection.FindOneAndDeleteAsync(com => com.Id == Guid.Parse(commentId));
-           return true;
+            try
+            {
+                Models.Entities.Comment comment = await (await commentCollection.FindAsync(x => x.Id == Guid.Parse(commentId))).FirstOrDefaultAsync();
+                if(comment is not null)
+                { 
+                    Task deleteComment = commentCollection.FindOneAndDeleteAsync(com => com.Id == Guid.Parse(commentId));
+                    Guid idempotentToken = Guid.NewGuid();
+                    CommentDeletedEvent commentDeletedEvent = new()
+                    {
+                        CommentId = comment.Id,
+                        PostId = comment.PostId,
+                        UserId = comment.UserId,
+                        IdempotentToken = idempotentToken
+                    };
+                    AddToCommentOutboxWithoutSaving(commentDeletedEvent, idempotentToken);
+                    Task saveChanges = context.SaveChangesAsync();
+                    await Task.WhenAll(saveChanges, deleteComment);
+
+                    return true;
+                }
+                else
+                {
+                    throw new CommentNotFoundException(commentId);
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<CommentDto> GetCommentByIdAsync(string commentId)
@@ -105,5 +124,19 @@ namespace Comment.Service.Services
         }
 
         private IMongoCollection<Models.Entities.Comment> commentCollection => mongoDbService.GetCollection<Models.Entities.Comment>("Comments");
+
+
+        private async void AddToCommentOutboxWithoutSaving(IEvent @event, Guid idempotentToken)
+        {
+            CommentOutbox commentOutbox = new()
+            {
+                IdempotentToken = idempotentToken,
+                OccuredOn = DateTime.UtcNow,
+                ProcessedOn = null,
+                Type = @event.GetType().Name,
+                Payload = JsonSerializer.Serialize(@event)
+            };
+            await context.CommentOutboxes.AddAsync(commentOutbox);
+        }
     }
 }

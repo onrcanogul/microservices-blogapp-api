@@ -22,7 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{42AA8A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "src\Shared\Shared\Shared.csproj", "{E6EE7E9A-773E-4A85-849B-F12C475A23CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comment.Outbox.Table.Publisher.Sevice", "src\Services\Comment.Outbox.Table.Publisher.Sevice\Comment.Outbox.Table.Publisher.Sevice.csproj", "{EC2D83A0-2073-4E57-966E-B7DAD0D25EA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comment.Outbox.Table.Sevice", "src\Services\Comment.Outbox.Table.Publisher.Sevice\Comment.Outbox.Table.Sevice.csproj", "{EC2D83A0-2073-4E57-966E-B7DAD0D25EA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -5,36 +5,37 @@ using Post.Service.Models.Entities;
 using Post.Service.Services.Abstractions;
 using Shared;
 using Shared.Events;
-
+using System.Text.Json;
 
 namespace Post.Service.Consumers
 {
-    public class CommentCreatedEventConsumer(PostDbContext dbContext, ISendEndpointProvider sendEndpointProvider, ICommentInboxService<CommentCreatedEvent> commentInboxService) : IConsumer<CommentCreatedEvent>
+    public class CommentDeletedEventConsumer(PostDbContext dbContext, ISendEndpointProvider sendEndpointProvider, ICommentInboxService<CommentDeletedEvent> commentInboxService) : IConsumer<CommentDeletedEvent>
     {
-        public async Task Consume(ConsumeContext<CommentCreatedEvent> context)
-        {   
+        public async Task Consume(ConsumeContext<CommentDeletedEvent> context)
+        {
             await commentInboxService.CreateAsync(context.Message.IdempotentToken, context.Message);
             List<CommentInbox> commentInboxes = await commentInboxService.GetNotProcessedInboxes();
 
             foreach (var cInbox in commentInboxes)
             {
-                CommentCreatedEvent commentCreatedEvent = commentInboxService.GetEvent(cInbox.Payload);
+                CommentDeletedEvent commentDeletedEvent = commentInboxService.GetEvent(cInbox.Payload);
 
-                Models.Entities.Post? post = await dbContext.Posts.FirstOrDefaultAsync(x => x.Id == commentCreatedEvent.PostId);
-                if (post is not null)
-                     post.CommentsCount++;             
+                Models.Entities.Post? post = await dbContext.Posts.Where(x => x.Id == commentDeletedEvent.PostId).FirstOrDefaultAsync();
+                if(post is not null)
+                {
+                    post.CommentsCount--;
+                }
                 else
                 {
                     PostNotFoundEvent postNotFoundEvent = new()
                     {
-                        CommentId = commentCreatedEvent.CommentId,
-                        PostId = commentCreatedEvent.PostId
+                        CommentId = commentDeletedEvent.CommentId,
+                        PostId = commentDeletedEvent.PostId
                     };
                     ISendEndpoint sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new($"queue:{RabbitMqSettings.Comment_PostNotFoundEventQueue}"));
                     await sendEndpoint.Send(postNotFoundEvent);
                 }
                 await commentInboxService.MakeProcessed(cInbox);
-
             }
         }
     }

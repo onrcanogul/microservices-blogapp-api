@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MassTransit.Saga;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace Shared
         public const string Post_CommentCreatedEventQueue = "post-comment-created-event-queue";
         public const string User_CommentCreatedEventQueue = "user-comment-created-event-queue";
         public const string Comment_PostNotFoundEventQueue = "comment-post-not-found-event-queue";
+        public const string Post_CommentDeletedEventQueue = "post-comment-deleted-event-queue";
+
 
     }
 }

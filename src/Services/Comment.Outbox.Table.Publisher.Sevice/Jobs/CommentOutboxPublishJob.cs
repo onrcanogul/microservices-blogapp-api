@@ -24,13 +24,18 @@ namespace Comment.Outbox.Table.Publisher.Sevice.Jobs
                 {
                     if(commentOutbox.Type == nameof(CommentCreatedEvent))
                     { 
-                         CommentCreatedEvent commentCreatedEvent = JsonSerializer.Deserialize<CommentCreatedEvent>(commentOutbox.Payload)!;
+                        CommentCreatedEvent commentCreatedEvent = JsonSerializer.Deserialize<CommentCreatedEvent>(commentOutbox.Payload)!;
+                        await publishEndpoint.Publish(commentCreatedEvent);
+                        //todo bütün eventlerle birlikte else yazdıktan sonra bu method dışarı alınababilir ve tek bir kere yazılabilir ama şimdi alınamaz.
+                        await UpdateProcessedOn(commentOutbox);
 
-                            await publishEndpoint.Publish(commentCreatedEvent);
-
-
-
-                        await CommentOutboxSingletonDatabase.ExecuteAsync($"UPDATE COMMENTOUTBOXES SET PROCESSEDON = GETDATE() WHERE IdempotentToken = '{commentOutbox.IdempotentToken}'");
+                    }
+                    else if(commentOutbox.Type == nameof(CommentDeletedEvent))
+                    {
+                        CommentDeletedEvent commentDeletedEvent = JsonSerializer.Deserialize<CommentDeletedEvent>(commentOutbox.Payload)!;
+                        await publishEndpoint.Publish(commentDeletedEvent);
+                        //todo bütün eventlerle birlikte else yazdıktan sonra bu method dışarı alınababilir ve tek bir kere yazılabilir ama şimdi alınamaz.
+                        await UpdateProcessedOn(commentOutbox);
 
                     }
                 }
@@ -38,5 +43,11 @@ namespace Comment.Outbox.Table.Publisher.Sevice.Jobs
                 Console.WriteLine("comment outbox checked");
             }
         }
+        private async Task UpdateProcessedOn(CommentOutbox commentOutbox)
+        {
+            await CommentOutboxSingletonDatabase.ExecuteAsync($"UPDATE COMMENTOUTBOXES SET PROCESSEDON = GETDATE() WHERE IdempotentToken = '{commentOutbox.IdempotentToken}'");
+        }
     }
+
+    
 }
