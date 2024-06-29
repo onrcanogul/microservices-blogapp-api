@@ -5,7 +5,6 @@ using Post.Service.Models.Entities;
 using Post.Service.Services.Abstractions;
 using Shared;
 using Shared.Events;
-using System.Text.Json;
 
 namespace Post.Service.Consumers
 {
@@ -24,6 +23,20 @@ namespace Post.Service.Consumers
                 if(post is not null)
                 {
                     post.CommentsCount--;
+                    CommentDeletedFromPostEvent commentDeletedFromPostEvent = new()
+                    {
+                        CommentId = commentDeletedEvent.CommentId,
+                        UserId = commentDeletedEvent.UserId,
+                        IdempotentToken = commentDeletedEvent.IdempotentToken,
+                        PostId = commentDeletedEvent.PostId
+                    };
+                    ISendEndpoint sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new($"queue:{RabbitMqSettings.User_CommentDeletedFromPostEventQueue}"));
+                    Task sendEvent = sendEndpoint.Send(commentDeletedFromPostEvent);
+
+                    cInbox.Processed = true;
+                    Task save = dbContext.SaveChangesAsync();
+
+                    await Task.WhenAll(save, sendEvent);
                 }
                 else
                 {
@@ -35,7 +48,7 @@ namespace Post.Service.Consumers
                     ISendEndpoint sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new($"queue:{RabbitMqSettings.Comment_PostNotFoundEventQueue}"));
                     await sendEndpoint.Send(postNotFoundEvent);
                 }
-                await commentInboxService.MakeProcessed(cInbox);
+                
             }
         }
     }

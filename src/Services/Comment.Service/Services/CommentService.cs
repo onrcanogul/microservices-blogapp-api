@@ -68,9 +68,8 @@ namespace Comment.Service.Services
                     return true;
                 }
                 else
-                {
                     throw new CommentNotFoundException(commentId);
-                }
+
             }
             catch
             {

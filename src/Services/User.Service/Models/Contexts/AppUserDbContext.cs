@@ -10,5 +10,6 @@ namespace User.Service.Models.Contexts
         public AppUserDbContext(DbContextOptions options) : base(options)
         {
         }
+        public DbSet<CommentInbox> CommentInboxes { get; set; }
     }
 }

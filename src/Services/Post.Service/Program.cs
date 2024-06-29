@@ -17,11 +17,13 @@ builder.Services.AddMassTransit(configure =>
 {
     configure.AddConsumer<CommentCreatedEventConsumer>();
     configure.AddConsumer<CommentDeletedEventConsumer>();
+    configure.AddConsumer<UserNotFoundEventConsumer>();
     configure.UsingRabbitMq((context, configurator) =>
     {
         configurator.Host(builder.Configuration["rabbitmq"]);
         configurator.ReceiveEndpoint(RabbitMqSettings.Post_CommentCreatedEventQueue, e => e.ConfigureConsumer<CommentCreatedEventConsumer>(context));
         configurator.ReceiveEndpoint(RabbitMqSettings.Post_CommentDeletedEventQueue, e => e.ConfigureConsumer<CommentDeletedEventConsumer>(context));
+        configurator.ReceiveEndpoint(RabbitMqSettings.Post_UserNotFoundEventQueue, e => e.ConfigureConsumer<UserNotFoundEventConsumer>(context));
     });
 });
 

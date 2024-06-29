@@ -1,5 +1,11 @@
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Post.Service.Services;
+using Post.Service.Services.Abstractions;
+using Shared;
+using Shared.Events;
+using User.Service.Consumers;
 using User.Service.Models.Contexts;
 using User.Service.Models.Entities;
 using User.Service.Services;
@@ -22,8 +28,22 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
 }).AddEntityFrameworkStores<AppUserDbContext>();
 
+builder.Services.AddMassTransit(configure =>
+{
+    configure.AddConsumer<CommentSavedToPostEventConsumer>();
+    configure.AddConsumer<CommentDeletedFromPostEventConsumer>();
+    configure.UsingRabbitMq((context, configurator) =>
+    {
+        configurator.Host(builder.Configuration["rabbitmq"]);
+        configurator.ReceiveEndpoint(RabbitMqSettings.User_CommentSavedToPostEventQueue, e => e.ConfigureConsumer<CommentSavedToPostEventConsumer>(context));
+        configurator.ReceiveEndpoint(RabbitMqSettings.User_CommentDeletedEventQueue, e => e.ConfigureConsumer<CommentDeletedFromPostEventConsumer>(context));
+    });
+});
+
 
 builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped(typeof(ICommentInboxService<>), typeof(CommentInboxService<>));
 
 builder.Services.AddControllers();
 
@@ -38,6 +58,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseHttpsRedirection();
 

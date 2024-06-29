@@ -22,7 +22,23 @@ namespace Post.Service.Consumers
 
                 Models.Entities.Post? post = await dbContext.Posts.FirstOrDefaultAsync(x => x.Id == commentCreatedEvent.PostId);
                 if (post is not null)
-                     post.CommentsCount++;             
+                {
+                    post.CommentsCount++;
+                    CommentSavedToPostEvent commentSavedToPostEvent = new()
+                    {
+                        CommentId = commentCreatedEvent.CommentId,
+                        UserId = commentCreatedEvent.UserId,
+                        IdempotentToken = commentCreatedEvent.IdempotentToken,
+                        PostId = commentCreatedEvent.PostId
+                    };
+                    ISendEndpoint sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new($"queue:{RabbitMqSettings.User_CommentSavedToPostEventQueue}"));
+
+                    cInbox.Processed = true;
+                    Task sendEvent = sendEndpoint.Send(commentSavedToPostEvent);
+                    Task save = dbContext.SaveChangesAsync();
+
+                    await Task.WhenAll(save, sendEvent);
+                }  
                 else
                 {
                     PostNotFoundEvent postNotFoundEvent = new()
@@ -33,7 +49,6 @@ namespace Post.Service.Consumers
                     ISendEndpoint sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new($"queue:{RabbitMqSettings.Comment_PostNotFoundEventQueue}"));
                     await sendEndpoint.Send(postNotFoundEvent);
                 }
-                await commentInboxService.MakeProcessed(cInbox);
 
             }
         }
