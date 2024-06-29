@@ -18,16 +18,20 @@ namespace Comment.Outbox.Table.Publisher.Sevice.Jobs
             if (CommentOutboxSingletonDatabase.DataReaderState)
             {
                 CommentOutboxSingletonDatabase.DataReaderBusy();
-                List<CommentOutbox> commentOutboxes = (await CommentOutboxSingletonDatabase.QueryAsync<CommentOutbox>("SELECT * FROM COMMENTOUTBOXES WHERE PROCESSED ON IS NULL ORDER BY OCURREDON ASC")).ToList();
+                List<CommentOutbox> commentOutboxes = (await CommentOutboxSingletonDatabase.QueryAsync<CommentOutbox>("SELECT * FROM COMMENTOUTBOXES WHERE PROCESSEDON IS NULL ORDER BY OCCUREDON ASC")).ToList();
 
                 foreach (var commentOutbox in commentOutboxes)
                 {
-                    CommentCreatedEvent commentCreatedEvent = JsonSerializer.Deserialize<CommentCreatedEvent>(commentOutbox.Payload);
+                    if(commentOutbox.Type == nameof(CommentCreatedEvent))
+                    { 
+                         CommentCreatedEvent commentCreatedEvent = JsonSerializer.Deserialize<CommentCreatedEvent>(commentOutbox.Payload)!;
 
-                    if (commentCreatedEvent is not null)
-                    {
-                        await publishEndpoint.Publish(commentCreatedEvent);
+                            await publishEndpoint.Publish(commentCreatedEvent);
+
+
+
                         await CommentOutboxSingletonDatabase.ExecuteAsync($"UPDATE COMMENTOUTBOXES SET PROCESSEDON = GETDATE() WHERE IdempotentToken = '{commentOutbox.IdempotentToken}'");
+
                     }
                 }
                 CommentOutboxSingletonDatabase.DataReaderReady();

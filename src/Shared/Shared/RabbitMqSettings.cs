@@ -8,6 +8,9 @@ namespace Shared
 {
     public static class RabbitMqSettings
     {
+        public const string Post_CommentCreatedEventQueue = "post-comment-created-event-queue";
+        public const string User_CommentCreatedEventQueue = "user-comment-created-event-queue";
+        public const string Comment_PostNotFoundEventQueue = "comment-post-not-found-event-queue";
 
     }
 }

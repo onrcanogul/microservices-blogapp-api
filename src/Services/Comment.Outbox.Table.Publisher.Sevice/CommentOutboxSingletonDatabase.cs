@@ -1,21 +1,16 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Comment.Outbox.Table.Publisher.Sevice
 {
     public static class CommentOutboxSingletonDatabase
     {
         static IDbConnection dbConnection;
-        static IConfiguration configuration;
-
-        static CommentOutboxSingletonDatabase() => dbConnection = new SqlConnection("Data Source=ONURCAN;Integrated Security=True;Initial Catalog = BlogApp-Microservices-Comment-Outbox;Trust Server Certificate=True;");
+        static CommentOutboxSingletonDatabase()
+        {
+            dbConnection = new SqlConnection("Data Source=ONURCAN;Integrated Security=True;Initial Catalog = BlogApp-Microservices-Comment-Outbox;Trust Server Certificate=True;");
+        }
         public static IDbConnection Connection
         {
             get

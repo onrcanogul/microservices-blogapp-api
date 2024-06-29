@@ -25,21 +25,24 @@ namespace Comment.Service.Services
                     PostId = Guid.Parse(postId)
                 };
                 Task insertTask = commentCollection.InsertOneAsync(comment);
+                Guid idempotentToken = Guid.NewGuid();
                 CommentCreatedEvent commentCreatedEvent = new()
                 {
                     CommentId = comment.Id,
                     PostId = comment.PostId,
-                    UserId = comment.UserId
+                    UserId = comment.UserId,
+                    IdempotentToken = idempotentToken
                 };
                 CommentOutbox commentOutbox = new()
                 {
-                    IdempotentToken = Guid.NewGuid(),
+                    IdempotentToken = idempotentToken,
                     OccuredOn = DateTime.Now,
                     Payload = JsonSerializer.Serialize(commentCreatedEvent),
                     ProcessedOn = null,
                     Type = commentCreatedEvent.GetType().Name
 
-                };    
+                };
+                await context.CommentOutboxes.AddAsync(commentOutbox);
                 Task saveTask = context.SaveChangesAsync();
                 await Task.WhenAll(insertTask,saveTask);
                 return true;
@@ -48,8 +51,6 @@ namespace Comment.Service.Services
             {
                 return false;
             }
-
-            //todo outbox table
         }
 
         public async Task<bool> DeleteCommentAsync(string commentId)

@@ -11,6 +11,7 @@ namespace Post.Service.Models.Contexts
         }
 
         public DbSet<Entities.Post> Posts { get; set; }
+        public DbSet<CommentInbox> CommentInboxes { get; set; }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {

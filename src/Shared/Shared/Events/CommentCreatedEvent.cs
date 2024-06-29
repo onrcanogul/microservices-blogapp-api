@@ -9,6 +9,7 @@ namespace Shared.Events
 {
     public class CommentCreatedEvent : IEvent
     {
+        public Guid IdempotentToken { get; set; }
         public Guid CommentId { get; set; }
         public Guid PostId { get; set; }
         public string UserId { get; set; }
