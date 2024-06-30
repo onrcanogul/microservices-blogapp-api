@@ -11,5 +11,6 @@ namespace User.Service.Models.Contexts
         {
         }
         public DbSet<CommentInbox> CommentInboxes { get; set; }
+        public DbSet<PostInbox> PostInboxes { get; set; }
     }
 }

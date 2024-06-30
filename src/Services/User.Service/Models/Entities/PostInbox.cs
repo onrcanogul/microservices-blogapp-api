@@ -2,8 +2,8 @@
 
 namespace User.Service.Models.Entities
 {
-        public class CommentInbox : BaseInbox
-        {
-        }
-    
+    public class PostInbox : BaseInbox
+    {
+        
+    }
 }

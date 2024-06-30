@@ -4,13 +4,13 @@ using Shared.Base;
 
 namespace Post.Service.Services.Abstractions
 {
-    public interface ICommentInboxService<T> where T:IEvent
+    public interface ICommentInboxService<T,Inbox> where T:IEvent where Inbox : BaseInbox
     {
         Task CreateAsync(Guid IdempotentToken, object @event);
 
-        Task<List<CommentInbox>> GetNotProcessedInboxes();
+        Task<List<Inbox>> GetNotProcessedInboxes();
 
-        Task MakeProcessed(CommentInbox commentInbox);
+        Task MakeProcessed(Inbox commentInbox);
 
         T GetEvent(string payload);
     }

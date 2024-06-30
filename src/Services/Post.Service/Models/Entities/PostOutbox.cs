@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
 
-namespace Comment.Outbox.Table.Publisher.Sevice.Entities
+namespace Post.Service.Models.Entities
 {
-    public class CommentOutbox
+    public class PostOutbox
     {
         [Key]
         public Guid IdempotentToken { get; set; }

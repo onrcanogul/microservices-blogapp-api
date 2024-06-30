@@ -9,12 +9,20 @@ namespace Post.Service.Consumers
     {
         public async Task Consume(ConsumeContext<UserNotFoundEvent> context)
         {
-            Models.Entities.Post? post = await dbContext.Posts.FirstOrDefaultAsync(x => x.Id == context.Message.PostId);
-            if(post is not null)
+            if(context.Message.CommentId != Guid.Empty) 
             {
-                post.CommentsCount--;
-                await dbContext.SaveChangesAsync();
+                Models.Entities.Post? post = await dbContext.Posts.FirstOrDefaultAsync(x => x.Id == context.Message.PostId);
+                if(post is not null)
+                     post.CommentsCount--;  
             }
+            else
+            {
+                Models.Entities.Post? post = await dbContext.Posts.FirstOrDefaultAsync(x => x.Id == context.Message.PostId);
+                if(post != null)
+                    dbContext.Posts.Remove(post);
+
+            }
+            await dbContext.SaveChangesAsync();
         }
     }
 }

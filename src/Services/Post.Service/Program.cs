@@ -27,7 +27,8 @@ builder.Services.AddMassTransit(configure =>
     });
 });
 
-builder.Services.AddScoped(typeof(ICommentInboxService<>), typeof(CommentInboxService<>));
+builder.Services.AddScoped(typeof(IInboxService<>), typeof(InboxService<>));
+builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.AddDbContext<PostDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SQLServer")));
 

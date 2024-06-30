@@ -18,7 +18,7 @@ namespace Shared
         public const string User_CommentDeletedFromPostEventQueue = "user-comment-deleted-from-post-event-queue";
         public const string Post_UserNotFoundEventQueue = "post-user-not-found-event-queue";
         public const string Comment_UserNotFoundEventQueue = "comment-user-not-found-event-queue";
-
-
+        public const string User_PostCreatedEventQueue = "user-post-created-event-queue";
+        public const string User_PostDeletedEventQueue = "user-post-deleted-event-queue";
     }
 }

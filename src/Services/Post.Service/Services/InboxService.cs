@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Post.Service.Services
 {
-    public class CommentInboxService<T>(PostDbContext context) : ICommentInboxService<T> where T: IEvent
+    public class InboxService<T>(PostDbContext context) : IInboxService<T> where T: IEvent
     {
         public async Task CreateAsync(Guid IdempotentToken, object @event)
         {

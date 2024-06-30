@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-Comment.Outbox.Table.Publisher.Sevice-84018536-eee8-4de1-85ff-8af90f9514f6</UserSecretsId>
+    <UserSecretsId>dotnet-OutboxTable.Service-3fac1265-8d0d-40d8-a5e4-7f1b84d5c134</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

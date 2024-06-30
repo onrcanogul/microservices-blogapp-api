@@ -4,7 +4,7 @@ using Shared.Base;
 
 namespace Post.Service.Services.Abstractions
 {
-    public interface ICommentInboxService<T> where T:IEvent
+    public interface IInboxService<T> where T:IEvent
     {
         Task CreateAsync(Guid IdempotentToken, object @event);
 

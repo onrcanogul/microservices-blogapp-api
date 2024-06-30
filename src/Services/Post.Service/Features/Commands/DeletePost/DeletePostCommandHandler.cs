@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Post.Service.Exceptions;
 using Post.Service.Models.Contexts;
+using Post.Service.Models.Entities;
+using Shared.Events;
+using System.Text.Json;
 
 namespace Post.Service.Features.Commands.DeletePost
 {
@@ -15,6 +18,23 @@ namespace Post.Service.Features.Commands.DeletePost
             if (post is not null)
             {
                 entityEntry = context.Posts.Remove(post);
+
+                Guid idempotentToken = Guid.NewGuid();
+                PostDeletedEvent postDeletedEvent = new()
+                {
+                    IdempotentToken = idempotentToken,
+                    PostId = post.Id,
+                    UserId = post.UserId
+                };
+                PostOutbox postOutbox = new()
+                {
+                    IdempotentToken = idempotentToken,
+                    OccuredOn = DateTime.UtcNow,
+                    Payload = JsonSerializer.Serialize(postDeletedEvent),
+                    Type = postDeletedEvent.GetType().Name,
+                    ProcessedOn = null
+                };
+                await context.AddAsync(postOutbox);
                 await context.SaveChangesAsync();
             }
             else

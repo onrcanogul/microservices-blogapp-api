@@ -8,7 +8,7 @@ using Shared.Events;
 
 namespace Post.Service.Consumers
 {
-    public class CommentDeletedEventConsumer(PostDbContext dbContext, ISendEndpointProvider sendEndpointProvider, ICommentInboxService<CommentDeletedEvent> commentInboxService) : IConsumer<CommentDeletedEvent>
+    public class CommentDeletedEventConsumer(PostDbContext dbContext, ISendEndpointProvider sendEndpointProvider, IInboxService<CommentDeletedEvent> commentInboxService) : IConsumer<CommentDeletedEvent>
     {
         public async Task Consume(ConsumeContext<CommentDeletedEvent> context)
         {
