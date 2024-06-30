@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Shared.Events
 {
-    public class PostNotFoundEvent
+    public class PostNotFoundEvent : IEvent
     {
         public Guid PostId { get; set; }
         public Guid CommentId { get; set; }
