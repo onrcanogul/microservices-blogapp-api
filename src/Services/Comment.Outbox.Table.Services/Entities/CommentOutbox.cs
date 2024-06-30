@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Outbox.Tables.Sevice.Entities
+namespace Comment.Outbox.Table.Services.Entities
 {
-    public class BaseOutbox
+    public class CommentOutbox
     {
         [Key]
         public Guid IdempotentToken { get; set; }

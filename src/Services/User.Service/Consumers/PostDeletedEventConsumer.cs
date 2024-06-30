@@ -11,9 +11,9 @@ namespace User.Service.Consumers
     {
         public async Task Consume(ConsumeContext<PostDeletedEvent> context)
         {
-            await inboxService.CreateAsync(context.Message.IdempotentToken, context.Message);
+            await inboxService.CreateAsync(context.Message.IdempotentToken, context.Message, Enums.EventType.Post);
 
-            List<PostInbox> postInboxes = await inboxService.GetNotProcessedInboxes();
+            List<PostInbox> postInboxes = await inboxService.GetNotProcessedPostInboxes();
             foreach (var postInbox in postInboxes) 
             {
                 PostDeletedEvent postDeletedEvent = inboxService.GetEvent(postInbox.Payload);

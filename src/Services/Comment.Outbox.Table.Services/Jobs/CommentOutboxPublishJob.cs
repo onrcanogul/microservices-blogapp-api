@@ -1,34 +1,29 @@
-﻿using Comment.Outbox.Table.Publisher.Sevice.Entities;
+﻿using Comment.Outbox.Table.Services;
+using Comment.Outbox.Table.Services.Entities;
 using MassTransit;
-using Outbox.Tables.Sevice.Entities;
-using Outbox.Tables.Sevice.Exceptions;
 using Quartz;
 using Shared.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace Comment.Outbox.Table.Publisher.Sevice.Jobs
+namespace Comment.Outbox.Table.Sevice.Jobs
 {
     public class CommentOutboxPublishJob(IPublishEndpoint publishEndpoint ,IConfiguration configuration) : IJob
     {
-        OutboxDatabase commentOutboxSingleton = new(configuration.GetConnectionString("CommentOutbox")!);
+        
         public async Task Execute(IJobExecutionContext context)
         {
-            if (commentOutboxSingleton.DataReaderState)
+            if (CommentOutboxSingletonDatabase.DataReaderState)
             {
-                commentOutboxSingleton.DataReaderBusy();
-                List<CommentOutbox> commentOutboxes = (await commentOutboxSingleton.QueryAsync<CommentOutbox>("SELECT * FROM COMMENTOUTBOXES WHERE PROCESSEDON IS NULL ORDER BY OCCUREDON ASC")).ToList();
+                CommentOutboxSingletonDatabase.DataReaderBusy();
+                List<CommentOutbox> commentOutboxes = (await CommentOutboxSingletonDatabase.QueryAsync<CommentOutbox>("SELECT * FROM COMMENTOUTBOXES WHERE PROCESSEDON IS NULL ORDER BY OCCUREDON ASC")).ToList();
 
                 foreach (var commentOutbox in commentOutboxes)
                 {
                     if(commentOutbox.Type == nameof(CommentCreatedEvent))
                     { 
                         CommentCreatedEvent commentCreatedEvent = JsonSerializer.Deserialize<CommentCreatedEvent>(commentOutbox.Payload)!;
-                        await publishEndpoint.Publish(commentCreatedEvent);      
+                        await publishEndpoint.Publish(commentCreatedEvent);
+                        
 
                     }
                     else if(commentOutbox.Type == nameof(CommentDeletedEvent))
@@ -39,15 +34,15 @@ namespace Comment.Outbox.Table.Publisher.Sevice.Jobs
                     }
                     else          
                         throw new EventNotExistException(commentOutbox.Type);
-                    
                     await UpdateProcessedOn(commentOutbox);
-                }          
-                commentOutboxSingleton.DataReaderReady();
+
+                }
+                CommentOutboxSingletonDatabase.DataReaderReady();
             }
         }
-        private async Task UpdateProcessedOn(BaseOutbox outbox)
+        private async Task UpdateProcessedOn(CommentOutbox outbox)
         {
-            await commentOutboxSingleton.ExecuteAsync($"UPDATE COMMENTOUTBOXES SET PROCESSEDON = GETDATE() WHERE IdempotentToken = '{outbox.IdempotentToken}'");
+            await CommentOutboxSingletonDatabase.ExecuteAsync($"UPDATE COMMENTOUTBOXES SET PROCESSEDON = GETDATE() WHERE IdempotentToken = '{outbox.IdempotentToken}'");
         }
     }
 

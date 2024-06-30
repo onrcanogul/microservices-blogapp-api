@@ -2,6 +2,6 @@
 {
     public class CreatePostCommandResponse
     {
-        public bool IsSuccess { get; set; }
+        
     }
 }

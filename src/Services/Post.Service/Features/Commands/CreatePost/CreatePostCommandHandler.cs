@@ -39,11 +39,8 @@ namespace Post.Service.Features.Commands.CreatePost
             };
             await context.PostOutboxes.AddAsync(postOutbox);
             await context.SaveChangesAsync();
-            
-            return new()
-            {
-                IsSuccess = entityEntry.State == EntityState.Added
-            };
+
+            return new();
 
         }
     }

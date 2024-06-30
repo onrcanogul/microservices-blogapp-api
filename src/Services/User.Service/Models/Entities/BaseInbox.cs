@@ -2,7 +2,7 @@
 
 namespace User.Service.Models.Entities
 {
-    public class BaseInbox
+    public abstract class BaseInbox
     {
         [Key]
         public Guid IdempotentToken { get; set; }

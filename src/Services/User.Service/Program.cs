@@ -32,18 +32,22 @@ builder.Services.AddMassTransit(configure =>
 {
     configure.AddConsumer<CommentSavedToPostEventConsumer>();
     configure.AddConsumer<CommentDeletedFromPostEventConsumer>();
+    configure.AddConsumer<PostCreatedEventConsumer>();
+    configure.AddConsumer<PostDeletedEventConsumer>();
     configure.UsingRabbitMq((context, configurator) =>
     {
         configurator.Host(builder.Configuration["rabbitmq"]);
         configurator.ReceiveEndpoint(RabbitMqSettings.User_CommentSavedToPostEventQueue, e => e.ConfigureConsumer<CommentSavedToPostEventConsumer>(context));
         configurator.ReceiveEndpoint(RabbitMqSettings.User_CommentDeletedEventQueue, e => e.ConfigureConsumer<CommentDeletedFromPostEventConsumer>(context));
+        configurator.ReceiveEndpoint(RabbitMqSettings.User_PostDeletedEventQueue, e => e.ConfigureConsumer<PostCreatedEventConsumer>(context));
+        configurator.ReceiveEndpoint(RabbitMqSettings.User_PostCreatedEventQueue, e => e.ConfigureConsumer<PostDeletedEventConsumer>(context));
     });
 });
 
 
 builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddScoped(typeof(ICommentInboxService<>), typeof(CommentInboxService<>));
+builder.Services.AddScoped(typeof(ICommentInboxService<,>), typeof(CommentInboxService<,>));
 
 builder.Services.AddControllers();
 
