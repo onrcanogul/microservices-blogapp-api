@@ -2,6 +2,7 @@ using Comment.Service.Consumers;
 using Comment.Service.Models.Contexts;
 using Comment.Service.Services;
 using Comment.Service.Services.Abstractions;
+using HealthChecks.UI.Client;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Shared;
@@ -36,6 +37,10 @@ builder.Services.AddMassTransit(configure =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+builder.Services.AddHealthChecks()
+    .AddMongoDb(builder.Configuration.GetConnectionString("mongodb")!);
+
 var app = builder.Build();
 
 
@@ -46,6 +51,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+
+app.UseHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.UseAuthorization();
 

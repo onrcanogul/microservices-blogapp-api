@@ -1,3 +1,4 @@
+using HealthChecks.UI.Client;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Post.Service.Consumers;
@@ -32,6 +33,9 @@ builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.AddDbContext<PostDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SQLServer")));
 
+
+builder.Services.AddHealthChecks()
+    .AddSqlServer(builder.Configuration.GetConnectionString("SQLServer")!);
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -49,6 +53,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.MapControllers();
 

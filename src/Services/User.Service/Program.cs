@@ -1,3 +1,4 @@
+using HealthChecks.UI.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,8 @@ builder.Services.AddMassTransit(configure =>
 
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddHealthChecks()
+    .AddSqlServer(builder.Configuration.GetConnectionString("SQLServer")!);
 
 builder.Services.AddScoped(typeof(ICommentInboxService<,>), typeof(CommentInboxService<,>));
 
@@ -63,6 +66,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.UseHttpsRedirection();
 
